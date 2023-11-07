@@ -1,0 +1,15 @@
+{
+  "domain": "public_transport_idos",
+  "name": "Public Transport IDOS",
+  "version": "0.0.0-dev1+001",
+  "documentation": "https://your-documentation-url.com",
+  "config_flow": true,
+  "after_dependencies": [],
+  "codeowners": ["@"],
+  "dependencies": [],
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "",
+  "loggers": [],
+  "requirements": []
+}
