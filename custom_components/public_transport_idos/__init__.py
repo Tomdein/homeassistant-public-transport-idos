@@ -14,6 +14,8 @@ from homeassistant.const import (
 
 from .const import CONF_FLOW_ARRIVAL_STATION
 
+PLATFORMS = [Platform.SENSOR]
+
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     #hass.states.set(f"{DOMAIN}.connection_data", "No data available - Wheee")# - creates new state that will be removed after reset
     _LOGGER.debug(f"{__name__}:async_setup")
@@ -32,6 +34,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     # TODO Optionally store an object for your platforms to access. Gets deleted in async_unload_entry
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = config_entry.data[CONF_FLOW_ARRIVAL_STATION]
 
+    await hass.config_entries.async_forward_entry_setups(config_entry, (Platform.SENSOR,))
+
     return True
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
@@ -40,5 +44,9 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
     Adds the ability to reload entry. 
     Adds the button 'reload' next to 'delete' and 'disable' after clicking on integration.
     """
-    hass.data[DOMAIN].pop(config_entry.entry_id)
-    return True
+    if unload_ok := await hass.config_entries.async_unload_platforms(
+        config_entry, (Platform.SENSOR,)
+    ):
+        hass.data[DOMAIN].pop(config_entry.entry_id)
+
+    return unload_ok
