@@ -8,3 +8,5 @@ DOMAIN = "public_transport_idos"
 
 CONF_FLOW_DEPARTURE_STATION: Final = "departure_station"
 CONF_FLOW_ARRIVAL_STATION: Final = "arrival_station"
+
+STATION_PATTERN: Final = r"^[\w, -]*$"

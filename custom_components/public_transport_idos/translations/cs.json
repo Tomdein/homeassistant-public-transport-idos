@@ -23,6 +23,12 @@
           },
           "arrival_station": {
             "name": "Výstupní zastávka attr"
+          },
+          "connections": {
+            "name": "Spoje",
+            "connection": {
+              "name": "Spojení"
+            }
           }
         }
       }

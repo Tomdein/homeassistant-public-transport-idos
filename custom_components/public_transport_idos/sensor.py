@@ -53,8 +53,6 @@ IDOSSensorDescription1: SensorEntityDescription = SensorEntityDescription(
     device_class = SensorDeviceClass.DURATION,  # SensorDeviceClass | None
     native_unit_of_measurement = "min",     # str | None
     state_class = SensorStateClass.MEASUREMENT, # SensorStateClass | str | None
-    suggested_display_precision = 0,
-    suggested_unit_of_measurement = "min",  # str | None
     )
 
 IDOSSensorDescription2: SensorEntityDescription = SensorEntityDescription(
@@ -65,7 +63,16 @@ IDOSSensorDescription2: SensorEntityDescription = SensorEntityDescription(
     device_class = SensorDeviceClass.DURATION,  # SensorDeviceClass | None
     native_unit_of_measurement = "min",     # str | None
     state_class = SensorStateClass.MEASUREMENT, # SensorStateClass | str | None
-    suggested_unit_of_measurement = "min",  # str | None
+    )
+
+IDOSSensorDescription3: SensorEntityDescription = SensorEntityDescription(
+    # EntityDescription (device_class, translation_key and unit_of_measurement are overriden in SensorEntityDescription)
+    key = "sensor3-rest",                   # str
+    translation_key = "connection-rest",    # str | None
+    # SensorEntityDescription:
+    device_class = SensorDeviceClass.DURATION,  # SensorDeviceClass | None
+    native_unit_of_measurement = "min",     # str | None
+    state_class = SensorStateClass.MEASUREMENT, # SensorStateClass | str | None
     )
 
 async def async_setup_entry(
@@ -89,8 +96,15 @@ async def async_setup_entry(
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription2.key}"
     entities.append(PublicTransportIDOSSensor(unique_id, name, departure_station, arrival_station, IDOSSensorDescription2))
 
+    name = f"Name: {config_entry.title} ({IDOSSensorDescription3.key})"
+    unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription3.key}"
+    entities.append(PublicTransportIDOSSensor(unique_id, name, departure_station, arrival_station, IDOSSensorDescription2, True))
+
     async_add_entities(entities)
 
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    # If needed, implement async_will_remove_from_hass in Entity for cleanup of Entity data
 
 class PublicTransportIDOSSensor(SensorEntity):
     """PublicTransportIDOS Sensor."""
@@ -103,7 +117,7 @@ class PublicTransportIDOSSensor(SensorEntity):
         }
     )
 
-    def __init__(self, unique_id: str, name: str, departure_station: str, arrival_station: str, description: SensorEntityDescription) -> None:
+    def __init__(self, unique_id: str, name: str, departure_station: str, arrival_station: str, description: SensorEntityDescription, has_paged_connections: bool = False) -> None:
         """Initialize PublicTransportIDOS Sensor."""
         super().__init__()
         self.entity_description = description
@@ -114,6 +128,7 @@ class PublicTransportIDOSSensor(SensorEntity):
         self._arrival_station = arrival_station
         self._state = "Does not matter in sensor - returns _attr_native_value"
         self._attr_native_value="5"
+        self._has_paged_connections = has_paged_connections
         _LOGGER.debug(f"{__name__}:PublicTransportIDOSSensor:__init__")
 
     async def async_update(self):
@@ -132,7 +147,25 @@ class PublicTransportIDOSSensor(SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the sun."""
-        return {
-            "departure_station": self.departure_station,
-            "arrival_station": self.arrival_station,
-        }
+        if not self._has_paged_connections:
+            return {
+                "departure_station": self.departure_station,
+                "arrival_station": self.arrival_station,
+            }
+
+        return {"connections":
+                [
+                    {"connection":
+                     {
+                        "departure_station": self.departure_station,
+                        "arrival_station": self.arrival_station
+                     }
+                    },
+                    {"connection":
+                     {
+                        "departure_station": self.departure_station,
+                        "arrival_station": self.arrival_station
+                     }
+                    }
+                ]
+            }

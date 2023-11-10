@@ -22,7 +22,7 @@ from homeassistant import config as conf_util
 
 from .const import CONF_FLOW_ARRIVAL_STATION
 
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.TEXT, Platform.BUTTON]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     #hass.states.set(f"{DOMAIN}.connection_data", "No data available - Wheee")# - creates new state that will be removed after reset
@@ -53,7 +53,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     # TODO Optionally store an object for your platforms to access. Gets deleted in async_unload_entry
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = config_entry.data[CONF_FLOW_ARRIVAL_STATION]
 
-    await hass.config_entries.async_forward_entry_setups(config_entry, (Platform.SENSOR,))
+    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     return True
 
@@ -64,7 +64,7 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
     Adds the button 'reload' next to 'delete' and 'disable' after clicking on integration.
     """
     if unload_ok := await hass.config_entries.async_unload_platforms(
-        config_entry, (Platform.SENSOR,)
+        config_entry, PLATFORMS
     ):
         hass.data[DOMAIN].pop(config_entry.entry_id)
 

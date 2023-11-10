@@ -23,6 +23,12 @@
           },
           "arrival_station": {
             "name": "Arrival station attr"
+          },
+          "connections": {
+            "name": "Connections",
+            "connection": {
+              "name": "Connection"
+            }
           }
         }
       }
