@@ -1,0 +1,31 @@
+{
+  "title": "Veřejná doprava IDOS",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfigurace IDOS",
+        "data": {
+          "departure_station": "Nástupní zastávka",
+          "arrival_station": "Výstupní zastávka"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Stejné zařízení je již nakonfigurováno"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "state_attributes": {
+          "departure_station": {
+            "name": "Nástupní zastávka attr"
+          },
+          "arrival_station": {
+            "name": "Výstupní zastávka attr"
+          }
+        }
+      }
+    }
+  }
+}

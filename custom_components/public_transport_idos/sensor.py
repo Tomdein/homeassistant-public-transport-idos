@@ -48,6 +48,7 @@ from .const import (
 IDOSSensorDescription1: SensorEntityDescription = SensorEntityDescription(
     # EntityDescription (device_class, translation_key and unit_of_measurement are overriden in SensorEntityDescription)
     key = "sensor1",                        # str
+    translation_key = "connection",         # str | None
     # SensorEntityDescription:
     device_class = SensorDeviceClass.DURATION,  # SensorDeviceClass | None
     native_unit_of_measurement = "min",     # str | None
@@ -59,6 +60,7 @@ IDOSSensorDescription1: SensorEntityDescription = SensorEntityDescription(
 IDOSSensorDescription2: SensorEntityDescription = SensorEntityDescription(
     # EntityDescription (device_class, translation_key and unit_of_measurement are overriden in SensorEntityDescription)
     key = "sensor2",                        # str
+    translation_key = "connection",         # str | None
     # SensorEntityDescription:
     device_class = SensorDeviceClass.DURATION,  # SensorDeviceClass | None
     native_unit_of_measurement = "min",     # str | None

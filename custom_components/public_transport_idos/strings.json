@@ -1,17 +1,31 @@
 {
+  "title": "IDOS title",
   "config": {
-    "title": "Wheeee",
     "step": {
       "user": {
         "title": "IDOS configuration",
         "data": {
-          "Departure station": "Departure station",
-          "Arrival station": "Arrival station"
+          "departure_station": "Departure station",
+          "arrival_station": "Arrival station"
         }
       }
     },
     "abort": {
       "already_configured": "Device is already configured"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "connection": {
+        "state_attributes": {
+          "departure_station": {
+            "name": "Departure station attr"
+          },
+          "arrival_station": {
+            "name": "Arrival station attr"
+          }
+        }
+      }
     }
   }
 }
