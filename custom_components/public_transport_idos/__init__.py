@@ -21,6 +21,7 @@ from homeassistant.const import CONF_EXCLUDE, CONF_DOMAINS
 from homeassistant import config as conf_util
 
 from .const import CONF_FLOW_ARRIVAL_STATION
+from .coordinator import IDOSDataCoordinator, _async_update_listener
 
 PLATFORMS = [Platform.SENSOR, Platform.TEXT, Platform.BUTTON]
 
@@ -51,7 +52,16 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     _LOGGER.debug(f"{__name__}:async_setup_entry:{config_entry.domain}")
 
     # TODO Optionally store an object for your platforms to access. Gets deleted in async_unload_entry
-    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = config_entry.data[CONF_FLOW_ARRIVAL_STATION]
+
+    coordinator: IDOSDataCoordinator = IDOSDataCoordinator(hass, config_entry)
+    config_entry.async_on_unload(
+        config_entry.add_update_listener(_async_update_listener)
+    )
+
+    await coordinator.async_config_entry_first_refresh()
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][config_entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 

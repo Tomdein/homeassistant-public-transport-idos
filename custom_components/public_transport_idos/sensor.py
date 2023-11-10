@@ -5,7 +5,7 @@ _LOGGER.debug(f"loaded")
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import Event, HomeAssistant
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.const import CONF_ENTITY_ID
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
@@ -19,11 +19,23 @@ from homeassistant.components.sensor import (
     SensorStateClass,
     SensorDeviceClass,
 )
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    DOMAIN,
     CONF_FLOW_ARRIVAL_STATION,
     CONF_FLOW_DEPARTURE_STATION,
+    ATTR_DEPARTURE_STATION,
+    ATTR_DEPARTURE_NUMBER,
+    ATTR_DEPARTURE_TYPE,
+    ATTR_DEPARTURE_TIME,
+    ATTR_ARRIVAL_STATION,
+    ATTR_ARRIVAL_NUMBER,
+    ATTR_ARRIVAL_TYPE,
+    ATTR_ARRIVAL_TIME,
+    ATTR_CONNECTIONS,
 )
+from .coordinator import IDOSDataCoordinator
 
 # The _attr_... always take precedence, they are not overriden
 # SensorEntityDescription's members:
@@ -81,91 +93,155 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Initialize PublicTransportIDOS config entry."""
-    registry = er.async_get(hass)
+    coordinator: IDOSDataCoordinator = hass.data[DOMAIN][config_entry.entry_id]
     # TODO Optionally validate config entry options before creating entity
 
     entities = []
 
     name = f"Name: {config_entry.title} ({IDOSSensorDescription1.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription1.key}"
-    departure_station = config_entry.data[CONF_FLOW_DEPARTURE_STATION]
-    arrival_station = config_entry.data[CONF_FLOW_ARRIVAL_STATION]
-    entities.append(PublicTransportIDOSSensor(unique_id, name, departure_station, arrival_station, IDOSSensorDescription1))
+    entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription1))
 
     name = f"Name: {config_entry.title} ({IDOSSensorDescription2.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription2.key}"
-    entities.append(PublicTransportIDOSSensor(unique_id, name, departure_station, arrival_station, IDOSSensorDescription2))
+    entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription2))
 
     name = f"Name: {config_entry.title} ({IDOSSensorDescription3.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription3.key}"
-    entities.append(PublicTransportIDOSSensor(unique_id, name, departure_station, arrival_station, IDOSSensorDescription2, True))
+    entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription2))
 
-    async_add_entities(entities)
+    async_add_entities(entities, update_before_add=True)
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     # If needed, implement async_will_remove_from_hass in Entity for cleanup of Entity data
 
-class PublicTransportIDOSSensor(SensorEntity):
+class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEntity):
     """PublicTransportIDOS Sensor."""
 
     _unrecorded_attributes = frozenset(
         {
-            "departure_station",
-            "arrival_station",
             "native_value",
+            ATTR_DEPARTURE_STATION,
+            ATTR_DEPARTURE_NUMBER,
+            ATTR_DEPARTURE_TYPE,
+            ATTR_DEPARTURE_TIME,
+            ATTR_ARRIVAL_STATION,
+            ATTR_ARRIVAL_NUMBER,
+            ATTR_ARRIVAL_TYPE,
+            ATTR_ARRIVAL_TIME,
+            ATTR_CONNECTIONS,
         }
     )
 
-    def __init__(self, unique_id: str, name: str, departure_station: str, arrival_station: str, description: SensorEntityDescription, has_paged_connections: bool = False) -> None:
+    connections: dict[list[dict]]
+
+    def __init__(self,
+                 unique_id: str,
+                 name: str,
+                 coordinator: IDOSDataCoordinator,
+                 description: SensorEntityDescription) -> None:
         """Initialize PublicTransportIDOS Sensor."""
-        super().__init__()
+        super().__init__(coordinator)
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_name = name
         self._attr_unique_id = unique_id
-        self._departure_station = departure_station
-        self._arrival_station = arrival_station
         self._state = "Does not matter in sensor - returns _attr_native_value"
         self._attr_native_value="5"
-        self._has_paged_connections = has_paged_connections
         _LOGGER.debug(f"{__name__}:PublicTransportIDOSSensor:__init__")
+        return
 
-    async def async_update(self):
-        # Implement web scraping and data retrieval here
-        # Update self._state with the gathered data
-        _LOGGER.debug(f"{__name__}:PublicTransportIDOSSensor:async_update")
+    # All info about connections
+    @property
+    def connections(self):
+        return self._connections
+
+    # Breakout of connections into departure attributes
+    @property
+    def departure_station(self):
+        return self._departure_station
 
     @property
     def departure_station(self):
         return self._departure_station
 
     @property
+    def departure_number(self):
+        return self._departure_number
+
+    @property
+    def departure_type(self):
+        return self._departure_type
+
+    @property
+    def departure_time(self):
+        return self._departure_time
+
+    # Breakout of connections into arrival attributes
+    @property
     def arrival_station(self):
         return self._arrival_station
 
     @property
+    def arrival_station(self):
+        return self._arrival_station
+
+    @property
+    def arrival_number(self):
+        return self._arrival_number
+
+    @property
+    def arrival_type(self):
+        return self._arrival_type
+
+    @property
+    def arrival_time(self):
+        return self._arrival_time
+
+    def get_data_from_coordinator(self) -> None:
+        single_connections = self.coordinator.connections_data[0]["single_connections"]
+        self._connections = single_connections
+
+        self._departure_station = single_connections[0]["stations"][0]
+        self._departure_number = single_connections[0]["number"]
+        self._departure_type = single_connections[0]["type"]
+        self._departure_time = single_connections[0]["times"][0]
+
+        self._arrival_station = single_connections[-1]["stations"][-1]
+        self._arrival_number = single_connections[-1]["number"]
+        self._arrival_type = single_connections[-1]["type"]
+        self._arrival_time = single_connections[-1]["times"][-1]
+        return
+
+    async def async_update(self) -> None:
+        """Update the sensor data
+
+        Called by `async_add_entities` if `update_before_add=True` parameter is set.
+        Also called perriodicaly by HA if `should_pool` property returns True.
+        """
+        self.get_data_from_coordinator()
+        return
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # TODO: Update self._state with the gathered data
+        self.get_data_from_coordinator()
+        self.async_write_ha_state()
+        return
+
+    @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the sun."""
-        if not self._has_paged_connections:
-            return {
-                "departure_station": self.departure_station,
-                "arrival_station": self.arrival_station,
-            }
-
-        return {"connections":
-                [
-                    {"connection":
-                     {
-                        "departure_station": self.departure_station,
-                        "arrival_station": self.arrival_station
-                     }
-                    },
-                    {"connection":
-                     {
-                        "departure_station": self.departure_station,
-                        "arrival_station": self.arrival_station
-                     }
-                    }
-                ]
-            }
+        return {
+            ATTR_DEPARTURE_STATION: self.departure_station,
+            ATTR_DEPARTURE_NUMBER: self.departure_number,
+            ATTR_DEPARTURE_TYPE: self.departure_type,
+            ATTR_DEPARTURE_TIME: self.departure_time,
+            ATTR_ARRIVAL_STATION: self.arrival_station,
+            ATTR_ARRIVAL_NUMBER: self.arrival_number,
+            ATTR_ARRIVAL_TYPE: self.arrival_type,
+            ATTR_ARRIVAL_TIME: self.arrival_time,
+            ATTR_CONNECTIONS: self.connections,
+        }

@@ -1,5 +1,5 @@
 {
-  "title": "IDOS title",
+  "title": "IDOS Public Transport - Czech",
   "config": {
     "step": {
       "user": {
@@ -19,16 +19,31 @@
       "connection": {
         "state_attributes": {
           "departure_station": {
-            "name": "Departure station attr"
+            "name": "Departure station"
+          },
+          "departure_number": {
+            "name": "Departure number"
+          },
+          "departure_type": {
+            "name": "Departure type"
+          },
+          "departure_time": {
+            "name": "Departure time"
           },
           "arrival_station": {
-            "name": "Arrival station attr"
+            "name": "Arrival station"
+          },
+          "arrival_number": {
+            "name": "Arrival number"
+          },
+          "arrival_type": {
+            "name": "Arrival type"
+          },
+          "arrival_time": {
+            "name": "Arrival time"
           },
           "connections": {
-            "name": "Connections",
-            "connection": {
-              "name": "Connection"
-            }
+            "name": "Connections"
           }
         }
       }

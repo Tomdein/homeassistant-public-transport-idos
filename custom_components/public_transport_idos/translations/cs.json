@@ -19,16 +19,31 @@
       "connection": {
         "state_attributes": {
           "departure_station": {
-            "name": "Nástupní zastávka attr"
+            "name": "Nástupní zastávka"
+          },
+          "departure_number": {
+            "name": "Nástupní číslo"
+          },
+          "departure_type": {
+            "name": "Nástupní typ"
+          },
+          "departure_time": {
+            "name": "Nástupní čas"
           },
           "arrival_station": {
-            "name": "Výstupní zastávka attr"
+            "name": "Výstupní station"
+          },
+          "arrival_number": {
+            "name": "Výstupní číslo"
+          },
+          "arrival_type": {
+            "name": "Výstupní typ"
+          },
+          "arrival_time": {
+            "name": "Výstupní čas"
           },
           "connections": {
-            "name": "Spoje",
-            "connection": {
-              "name": "Spojení"
-            }
+            "name": "Spojení"
           }
         }
       }
