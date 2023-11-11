@@ -2,7 +2,6 @@ from .const import DOMAIN
 
 import logging
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.debug(f"loaded")
 
 
 from homeassistant.config_entries import ConfigEntry
@@ -26,10 +25,6 @@ from .coordinator import IDOSDataCoordinator, _async_update_listener
 PLATFORMS = [Platform.SENSOR, Platform.TEXT, Platform.BUTTON]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    #hass.states.set(f"{DOMAIN}.connection_data", "No data available - Wheee")# - creates new state that will be removed after reset
-    _LOGGER.debug(f"{__name__}:async_setup")
-    _LOGGER.debug(f"{hass.data.keys()}")
-
     # Disable all from 'DOMAIN' from recorder history
     # Get the 'Recorder' instance
     recorder_instance: Recorder = hass.data[Recorder_DATA_INSTANCE]
@@ -48,11 +43,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     How to handle loading of config entry - either on startup or after adding dev/entity via config flow.
     The config_entry contains data you inputted in the UI while adding the integration.
     """
-    #hass.states.set(f"{DOMAIN}.connection_data", "No data available")
-    _LOGGER.debug(f"{__name__}:async_setup_entry:{config_entry.domain}")
-
-    # TODO Optionally store an object for your platforms to access. Gets deleted in async_unload_entry
-
     coordinator: IDOSDataCoordinator = IDOSDataCoordinator(hass, config_entry)
     config_entry.async_on_unload(
         config_entry.add_update_listener(_async_update_listener)

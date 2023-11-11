@@ -1,5 +1,5 @@
 {
-  "title": "IDOS Public Transport - Czech",
+  "title": "IDOS - Czech Public Transport",
   "config": {
     "step": {
       "user": {
@@ -17,6 +17,7 @@
   "entity": {
     "sensor": {
       "connection": {
+        "name": "Public transport sensor",
         "state_attributes": {
           "departure_station": {
             "name": "Departure station"

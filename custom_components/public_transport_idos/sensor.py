@@ -1,6 +1,5 @@
 import logging
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.debug(f"loaded")
 
 from typing import Any
 
@@ -79,8 +78,8 @@ IDOSSensorDescription2: SensorEntityDescription = SensorEntityDescription(
 
 IDOSSensorDescription3: SensorEntityDescription = SensorEntityDescription(
     # EntityDescription (device_class, translation_key and unit_of_measurement are overriden in SensorEntityDescription)
-    key = "sensor3-rest",                   # str
-    translation_key = "connection-rest",    # str | None
+    key = "sensor3",                   # str
+    translation_key = "connection",    # str | None
     # SensorEntityDescription:
     device_class = SensorDeviceClass.DURATION,  # SensorDeviceClass | None
     native_unit_of_measurement = "min",     # str | None
@@ -98,15 +97,15 @@ async def async_setup_entry(
 
     entities = []
 
-    name = f"Name: {config_entry.title} ({IDOSSensorDescription1.key})"
+    name = f"{config_entry.title} ({IDOSSensorDescription1.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription1.key}"
     entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription1))
 
-    name = f"Name: {config_entry.title} ({IDOSSensorDescription2.key})"
+    name = f"{config_entry.title} ({IDOSSensorDescription2.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription2.key}"
     entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription2))
 
-    name = f"Name: {config_entry.title} ({IDOSSensorDescription3.key})"
+    name = f"{config_entry.title} ({IDOSSensorDescription3.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription3.key}"
     entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription2))
 
@@ -147,9 +146,8 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         self._attr_has_entity_name = True
         self._attr_name = name
         self._attr_unique_id = unique_id
-        self._state = "Does not matter in sensor - returns _attr_native_value"
+        # self._state = "Does not matter in sensor - returns _attr_native_value"
         self._attr_native_value="5"
-        _LOGGER.debug(f"{__name__}:PublicTransportIDOSSensor:__init__")
         return
 
     # All info about connections
@@ -212,6 +210,9 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         self._arrival_number = single_connections[-1]["number"]
         self._arrival_type = single_connections[-1]["type"]
         self._arrival_time = single_connections[-1]["times"][-1]
+
+        # TODO: Update self._attr_native_value with the gathered data
+        # self._attr_native_value="5"
         return
 
     async def async_update(self) -> None:
@@ -226,7 +227,6 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        # TODO: Update self._state with the gathered data
         self.get_data_from_coordinator()
         self.async_write_ha_state()
         return

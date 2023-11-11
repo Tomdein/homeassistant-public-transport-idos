@@ -17,6 +17,7 @@
   "entity": {
     "sensor": {
       "connection": {
+        "name": "Veřejná doprava senzor",
         "state_attributes": {
           "departure_station": {
             "name": "Nástupní zastávka"
@@ -31,7 +32,7 @@
             "name": "Nástupní čas"
           },
           "arrival_station": {
-            "name": "Výstupní station"
+            "name": "Výstupní zastávka"
           },
           "arrival_number": {
             "name": "Výstupní číslo"

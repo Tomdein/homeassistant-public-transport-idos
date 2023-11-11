@@ -1,6 +1,8 @@
 import logging
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.debug(f"loaded")
+
+from typing import Any
+from collections.abc import Mapping
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -34,13 +36,13 @@ from .const import (
     # pattern: str | None = None
 
 IDOSTextDescriptionDeparture: TextEntityDescription = TextEntityDescription(
-    key = "text-departure",
-    translation_key = "",
+    key = "departure",
+    translation_key = "departure",
     pattern = STATION_PATTERN,  # Match any words with spaces or commas separating them
 )
 IDOSTextDescriptionArrival: TextEntityDescription = TextEntityDescription(
-    key = "text-arrival",
-    translation_key = "",
+    key = "arrival",
+    translation_key = "arrival",
     pattern = STATION_PATTERN,  # Match any words with spaces, commas or '-' separating them
 )
 
@@ -54,15 +56,13 @@ async def async_setup_entry(
 
     entities = []
 
-    name = f"Name: {config_entry.title} ({IDOSTextDescriptionDeparture.key})"
-    unique_id = f"{config_entry.entry_id}-{IDOSTextDescriptionDeparture.key}"
-    station = config_entry.data[CONF_FLOW_DEPARTURE_STATION]
-    entities.append(PublicTransportIDOSText(unique_id, name, station, IDOSTextDescriptionDeparture))
+    name = f"{config_entry.title} {IDOSTextDescriptionDeparture.key} input"
+    unique_id = f"{config_entry.entry_id}-{IDOSTextDescriptionDeparture.key}-input"
+    entities.append(PublicTransportIDOSText(unique_id, name, CONF_FLOW_DEPARTURE_STATION, config_entry, IDOSTextDescriptionDeparture))
 
-    name = f"Name: {config_entry.title} ({IDOSTextDescriptionArrival.key})"
-    unique_id = f"{config_entry.entry_id}-{IDOSTextDescriptionArrival.key}"
-    station = config_entry.data[CONF_FLOW_ARRIVAL_STATION]
-    entities.append(PublicTransportIDOSText(unique_id, name, station, IDOSTextDescriptionArrival))
+    name = f"{config_entry.title} {IDOSTextDescriptionArrival.key} input"
+    unique_id = f"{config_entry.entry_id}-{IDOSTextDescriptionArrival.key}-input"
+    entities.append(PublicTransportIDOSText(unique_id, name, CONF_FLOW_ARRIVAL_STATION, config_entry , IDOSTextDescriptionArrival))
     
     async_add_entities(entities)
 
@@ -73,19 +73,43 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
 class PublicTransportIDOSText(TextEntity):
     """PublicTransportIDOS Text."""
 
-    def __init__(self, unique_id: str, name: str, station: str, description: TextEntityDescription) -> None:
+    _unrecorded_attributes = frozenset(
+        {
+            "station_type"
+        }
+    )
+
+    _config_entry: ConfigEntry
+    _station_type: str
+
+    def __init__(self, unique_id: str, name: str, station_type: str, config_entry: ConfigEntry, description: TextEntityDescription) -> None:
         """Initialize PublicTransportIDOS Sensor."""
         super().__init__()
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_name = name
         self._attr_unique_id = unique_id
-        self._station = station
-        self._state = "Does not matter in sensor - returns _attr_native_value"
-        self._attr_native_value = "VSB-TUO"
-        _LOGGER.debug(f"{__name__}:PublicTransportIDOSText:__init__")
+        # self._state = "Does not matter in sensor - returns _attr_native_value"
+        self._station_type = station_type
+        self._attr_native_value = config_entry.data[station_type]
+        self._config_entry = config_entry
+
+    @property
+    def station_type(self):
+        return self._station_type
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        """Return entity specific state attributes."""
+        return {"station_type": self.station_type}
 
     def set_value(self, value: str) -> None:
         """Change the value."""
+        # TODO validate if station is correct (could be also done via custom Lovelace UI card)
         self._attr_native_value = value
+
+        data = self._config_entry.data.copy()
+        data[self.station_type] = value
+        self.hass.config_entries.async_update_entry(self._config_entry, data=data)
+
         return

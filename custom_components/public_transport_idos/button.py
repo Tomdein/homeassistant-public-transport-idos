@@ -1,6 +1,5 @@
 import logging
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.debug(f"loaded")
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -29,7 +28,7 @@ from .const import (
     # unit_of_measurement: str | None = None
 
 IDOSButtonDescriptionPaging: ButtonEntityDescription = ButtonEntityDescription(
-    key = "text-departure",
+    key = "page_more",
     translation_key = "",
 )
 
@@ -43,9 +42,8 @@ async def async_setup_entry(
 
     entities = []
 
-    name = f"Name: {config_entry.title} ({IDOSButtonDescriptionPaging.key})"
+    name = f"{config_entry.title} {IDOSButtonDescriptionPaging.key}"
     unique_id = f"{config_entry.entry_id}-{IDOSButtonDescriptionPaging.key}"
-    station = config_entry.data[CONF_FLOW_DEPARTURE_STATION]
     entities.append(PublicTransportIDOSButtonPaging(unique_id, name, IDOSButtonDescriptionPaging))
 
     async_add_entities(entities)
@@ -64,10 +62,8 @@ class PublicTransportIDOSButtonPaging(ButtonEntity):
         self._attr_has_entity_name = True
         self._attr_name = name
         self._attr_unique_id = unique_id
-        self._state = "Does not matter in sensor - returns _attr_native_value"
-        self._attr_native_value = "Page mooooore"
-        _LOGGER.debug(f"{__name__}:PublicTransportIDOSButtonPaging:__init__")
+        # self._state = "Does not matter in sensor - returns _attr_native_value"
+        self._attr_native_value = "Page more connections"
 
     def press(self) -> None:
         """Press the button."""
-        _LOGGER.debug(f"{__name__}:PublicTransportIDOSButtonPaging:press")

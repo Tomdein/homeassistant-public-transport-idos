@@ -1,6 +1,5 @@
 import logging
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.debug(f"loaded")
 
 from dataclasses import dataclass
 
@@ -18,7 +17,8 @@ from .const import DOMAIN, CONF_FLOW_DEPARTURE_STATION, CONF_FLOW_ARRIVAL_STATIO
 async def _async_update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     """Handle options update."""
     coordinator: IDOSDataCoordinator = hass.data[DOMAIN][config_entry.entry_id]
-    if config_entry.title != coordinator.title:
+    if (config_entry.data[CONF_FLOW_DEPARTURE_STATION] != coordinator.departure_station
+        or config_entry.data[CONF_FLOW_ARRIVAL_STATION] != coordinator.arrival_station):
         await hass.config_entries.async_reload(config_entry.entry_id)
 
     return
@@ -54,8 +54,6 @@ class IDOSDataCoordinator(DataUpdateCoordinator):
         This is the place to pre-process the data to lookup tables
         so entities can quickly look up their data.
         """
-        _LOGGER.debug(f"{__name__}:async_update_data")
-
         # TODO: Implement web scraping and data retrieval here
         self.connections_data = [
         {'single_connections': [

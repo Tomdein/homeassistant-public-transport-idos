@@ -9,7 +9,6 @@ from homeassistant.util import slugify
 
 import logging
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.debug(f"loaded")
 
 from .const import (
     DOMAIN,
@@ -32,9 +31,6 @@ class PublicTransportIDOSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle a flow initialized by the user."""
-        _LOGGER.debug(f"{__name__}:async_step_user")
-        _LOGGER.debug(f"{__name__}:{user_input}:async_step_user")
-
 
         if user_input is not None:
             # Validate and save user input
@@ -44,9 +40,7 @@ class PublicTransportIDOSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ))
             self._abort_if_unique_id_configured()
 
-            _LOGGER.debug(f"{__name__}:async_step_user after abort")
-
-            return self.async_create_entry(title="Public Transport", data=user_input)
+            return self.async_create_entry(title="IDOS Public Transport", data=user_input)
 
         return self.async_show_form(
             step_id="user",
