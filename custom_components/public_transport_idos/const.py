@@ -20,4 +20,4 @@ ATTR_ARRIVAL_TIME: Final = "arrival_time"
 
 ATTR_CONNECTIONS: Final = "connections"
 
-STATION_PATTERN: Final = r"^[\w, -]*$"
+STATION_PATTERN: Final = r"^[\w, \-–]*$"

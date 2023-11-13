@@ -216,7 +216,7 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         dtime_departure: dt.datetime = dt.datetime.combine(dt.date.today(), parse_time(self._departure_time))
 
         dt_delta: dt.timedelta = dtime_departure - dtime_now
-        minutes = dt_delta.seconds//60
+        minutes = dt_delta.seconds//60 if dt_delta > dt.timedelta() else 0
 
         _LOGGER.warning(dt_delta)
         _LOGGER.warning(minutes)
