@@ -2,14 +2,14 @@
   "domain": "public_transport_idos",
   "name": "Public Transport IDOS",
   "version": "0.1.0-dev1",
-  "documentation": "https://your-documentation-url.com",
+  "documentation": "https://github.com/Tomdein/idos-scraper",
   "config_flow": true,
   "after_dependencies": [],
-  "codeowners": ["@"],
+  "codeowners": ["@Tomdein"],
   "dependencies": [],
   "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "issue_tracker": "",
+  "issue_tracker": "https://github.com/Tomdein/idos-scraper/issues",
   "loggers": [],
   "requirements": ["idos-scraper>=0.2.2"]
 }
