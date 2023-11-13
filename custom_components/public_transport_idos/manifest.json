@@ -1,7 +1,7 @@
 {
   "domain": "public_transport_idos",
   "name": "Public Transport IDOS",
-  "version": "0.0.0-dev1+001",
+  "version": "0.1.0-dev1",
   "documentation": "https://your-documentation-url.com",
   "config_flow": true,
   "after_dependencies": [],
@@ -11,5 +11,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "",
   "loggers": [],
-  "requirements": ["idos-scraper==0.2.1"]
+  "requirements": ["idos-scraper>=0.2.2"]
 }
