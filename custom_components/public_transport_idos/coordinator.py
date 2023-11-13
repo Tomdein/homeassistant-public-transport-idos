@@ -5,14 +5,18 @@ from dataclasses import dataclass
 
 from homeassistant.config_entries import ConfigEntry, UpdateListenerType
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 from datetime import timedelta
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DOMAIN, CONF_FLOW_DEPARTURE_STATION, CONF_FLOW_ARRIVAL_STATION
+
+import idos_scraper
 
 async def _async_update_listener(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
     """Handle options update."""
@@ -22,6 +26,9 @@ async def _async_update_listener(hass: HomeAssistant, config_entry: ConfigEntry)
         await hass.config_entries.async_reload(config_entry.entry_id)
 
     return
+
+class IDOSCannotConnect(HomeAssistantError):
+    """Unable to connect to the IDOS web site."""
 
 class IDOSDataCoordinator(DataUpdateCoordinator):
     """IDOSDataCoordinator coordinator."""
@@ -54,37 +61,24 @@ class IDOSDataCoordinator(DataUpdateCoordinator):
         This is the place to pre-process the data to lookup tables
         so entities can quickly look up their data.
         """
-        # TODO: Implement web scraping and data retrieval here
-        self.connections_data = [
-        {'single_connections': [
-            {'delay': None, 'icon': '2.svg', 'type': 'Bus', 'number': '46', 'times': ['9:11', '9:26'], 'stations': [f'Horní Polanka', 'Svinov,mosty'], 'platforms': ['2', 'D12']},
-            {'delay': None, 'icon': '3.svg', 'type': 'Tram', 'number': '17', 'times': ['9:31', '9:40'], 'stations': ['Svinov,mosty', 'VŠB-TUO'], f'platforms': ['H1', '1']}
-            ],
-         'id': '1744759255'
-        }, 
-        {'single_connections': [
-            {'delay': None, 'icon': '2.svg', 'type': 'Bus', 'number': '46', 'times': ['9:46', '10:01'], 'stations': ['Horní Polanka', 'Svinov,mosty'], 'platforms': ['2', 'D12']},
-            {'delay': None, 'icon': '3.svg', 'type': 'Tram', 'number': '7', 'times': ['10:04', '10:13'], 'stations': ['Svinov,mosty', 'VŠB-TUO'], 'platforms': ['H1', '1']}
-            ],
-         'id': '1744759400'
-        }, 
-        {'single_connections': [
-            {'delay': None, 'icon': '2.svg', 'type': 'Bus', 'number': '46', 'times': ['10:11', '10:26'], 'stations': ['Horní Polanka', 'Svinov,mosty'], 'platforms': ['2', 'D12']},
-            {'delay': None, 'icon': '3.svg', 'type': 'Tram', 'number': '17', 'times': ['10:31', '10:40'], 'stations': ['Svinov,mosty', 'VŠB-TUO'], 'platforms': ['H1', '1']}
-            ],
-         'id': '1744759401'
-        }
-        ]
+        session = async_get_clientsession(self.hass)
+        data = await idos_scraper.async_SearchConnectionsByStation(
+            self.departure_station,
+            self.arrival_station,
+            session = session,
+            )
+
+        if data is None:
+            raise IDOSCannotConnect()
+
+        self.connections_data = data["connections"]
         return
-        
-        try:
-            # Note: asyncio.TimeoutError and aiohttp.ClientError are already
-            # handled by the data update coordinator.
-            async with async_timeout.timeout(10):
-                return await self.my_api.fetch_data(listening_idx)
-        except ApiAuthError as err:
-            # Raising ConfigEntryAuthFailed will cancel future updates
-            # and start a config flow with SOURCE_REAUTH (async_step_reauth)
-            raise ConfigEntryAuthFailed from err
-        except ApiError as err:
-            raise UpdateFailed(f"Error communicating with API: {err}")
+
+    async def async_shutdown(self) -> None:
+        """Handle removal (hopefuly)
+
+        Hopefuly this triggers when being removed,
+        so we can gracefuly shut down our session
+        """
+        await super().async_shutdown()
+        return

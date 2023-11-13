@@ -46,6 +46,9 @@
           "connections": {
             "name": "Spojení"
           }
+        },
+        "state": {
+          "0": "Nyní"
         }
       }
     }

@@ -30,6 +30,7 @@ from .const import (
 IDOSButtonDescriptionPaging: ButtonEntityDescription = ButtonEntityDescription(
     key = "page_more",
     translation_key = "",
+    icon= "mdi:chevron-down-circle",
 )
 
 async def async_setup_entry(

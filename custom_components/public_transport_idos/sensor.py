@@ -4,13 +4,11 @@ _LOGGER = logging.getLogger(__name__)
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.const import CONF_ENTITY_ID
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.entity import Entity
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import UNDEFINED
+from homeassistant.util.dt import now, parse_time
+import datetime as dt
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -99,15 +97,15 @@ async def async_setup_entry(
 
     name = f"{config_entry.title} ({IDOSSensorDescription1.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription1.key}"
-    entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription1))
+    entities.append(PublicTransportIDOSSensor(unique_id, name, 0, coordinator, IDOSSensorDescription1))
 
     name = f"{config_entry.title} ({IDOSSensorDescription2.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription2.key}"
-    entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription2))
+    entities.append(PublicTransportIDOSSensor(unique_id, name, 1, coordinator, IDOSSensorDescription2))
 
     name = f"{config_entry.title} ({IDOSSensorDescription3.key})"
     unique_id = f"{config_entry.entry_id}-{IDOSSensorDescription3.key}"
-    entities.append(PublicTransportIDOSSensor(unique_id, name, coordinator, IDOSSensorDescription2))
+    entities.append(PublicTransportIDOSSensor(unique_id, name, 2, coordinator, IDOSSensorDescription2))
 
     async_add_entities(entities, update_before_add=True)
 
@@ -134,10 +132,12 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
     )
 
     connections: dict[list[dict]]
+    _sensor_index: int = 0  # What position in list of data to look at (first, second or third)
 
     def __init__(self,
                  unique_id: str,
                  name: str,
+                 sensor_index: int,
                  coordinator: IDOSDataCoordinator,
                  description: SensorEntityDescription) -> None:
         """Initialize PublicTransportIDOS Sensor."""
@@ -146,8 +146,9 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         self._attr_has_entity_name = True
         self._attr_name = name
         self._attr_unique_id = unique_id
+        self._sensor_index = sensor_index
         # self._state = "Does not matter in sensor - returns _attr_native_value"
-        self._attr_native_value="5"
+        self._attr_native_value=None
         return
 
     # All info about connections
@@ -198,7 +199,7 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         return self._arrival_time
 
     def get_data_from_coordinator(self) -> None:
-        single_connections = self.coordinator.connections_data[0]["single_connections"]
+        single_connections = self.coordinator.connections_data[self._sensor_index]["single_connections"]
         self._connections = single_connections
 
         self._departure_station = single_connections[0]["stations"][0]
@@ -211,8 +212,16 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         self._arrival_type = single_connections[-1]["type"]
         self._arrival_time = single_connections[-1]["times"][-1]
 
-        # TODO: Update self._attr_native_value with the gathered data
-        # self._attr_native_value="5"
+        dtime_now: dt.datetime = dt.datetime.now()
+        dtime_departure: dt.datetime = dt.datetime.combine(dt.date.today(), parse_time(self._departure_time))
+
+        dt_delta: dt.timedelta = dtime_departure - dtime_now
+        minutes = dt_delta.seconds//60
+
+        _LOGGER.warning(dt_delta)
+        _LOGGER.warning(minutes)
+
+        self._attr_native_value = minutes
         return
 
     async def async_update(self) -> None:
