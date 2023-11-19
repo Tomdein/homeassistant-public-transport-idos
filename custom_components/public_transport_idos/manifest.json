@@ -1,7 +1,7 @@
 {
   "domain": "public_transport_idos",
   "name": "Public Transport IDOS",
-  "version": "0.1.0-dev1",
+  "version": "0.1.0-dev2",
   "documentation": "https://github.com/Tomdein/idos-scraper",
   "config_flow": true,
   "after_dependencies": [],
@@ -11,5 +11,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Tomdein/idos-scraper/issues",
   "loggers": [],
-  "requirements": ["idos-scraper>=0.2.2"]
+  "requirements": ["idos-scraper>=0.2.3"]
 }

@@ -199,6 +199,22 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         return self._arrival_time
 
     def get_data_from_coordinator(self) -> None:
+        if self.coordinator.connections_data is None:
+            self._attr_native_value = None
+
+            self._connections = None
+
+            self._departure_station = None
+            self._departure_number = None
+            self._departure_type = None
+            self._departure_time = None
+
+            self._arrival_station = None
+            self._arrival_number = None
+            self._arrival_type = None
+            self._arrival_time = None
+            return
+
         single_connections = self.coordinator.connections_data[self._sensor_index]["single_connections"]
         self._connections = single_connections
 
@@ -217,9 +233,6 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
 
         dt_delta: dt.timedelta = dtime_departure - dtime_now
         minutes = dt_delta.seconds//60 if dt_delta > dt.timedelta() else 0
-
-        _LOGGER.warning(dt_delta)
-        _LOGGER.warning(minutes)
 
         self._attr_native_value = minutes
         return

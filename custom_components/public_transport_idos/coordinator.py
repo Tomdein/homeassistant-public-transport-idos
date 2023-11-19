@@ -71,7 +71,7 @@ class IDOSDataCoordinator(DataUpdateCoordinator):
         if data is None:
             raise IDOSCannotConnect()
 
-        self.connections_data = data["connections"]
+        self.connections_data = data["connections"] if len(data["connections"]) == 3 else None
         return
 
     async def async_shutdown(self) -> None:
