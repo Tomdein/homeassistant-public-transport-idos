@@ -25,6 +25,9 @@ from .coordinator import IDOSDataCoordinator, _async_update_listener
 PLATFORMS = [Platform.SENSOR, Platform.TEXT, Platform.BUTTON]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    # Add WebSocket command
+    hass.components.websocket_api.async_register_command(ws_handle_search_station)
+
     # Disable all from 'DOMAIN' from recorder history
     # Get the 'Recorder' instance
     recorder_instance: Recorder = hass.data[Recorder_DATA_INSTANCE]
@@ -69,3 +72,58 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
         hass.data[DOMAIN].pop(config_entry.entry_id)
 
     return unload_ok
+
+
+
+import re
+import voluptuous as vol
+
+from homeassistant.components import websocket_api
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+from idos_scraper.scrapers import async_search_station
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "idos/search_stations",
+        vol.Required("station"): str,
+        vol.Optional("count", default="3"): str,
+        vol.Optional("search_by_location"): {
+            vol.Required("latitude"): str,
+            vol.Required("longitude"): str,
+            vol.Optional("accuracy", default="10"): str,
+            vol.Optional("only_stations", default="true"): str,
+        },
+    }
+)
+@websocket_api.async_response
+async def ws_handle_search_station(
+    hass: HomeAssistant, connection: websocket_api.connection.ActiveConnection, msg: dict
+) -> None:
+    """Handle IDOS search station command."""
+    # Check if we are searching by location
+    if "search_by_location" in msg:
+        # stations = await async_search_station.async_SearchStationByLocation()
+        # connection.send_result(
+        # msg["id"],
+        # {
+        #     #"content_type": content_type,
+        #     "content": stations,
+        # },
+        # )
+        # return
+        connection.send_error(
+                msg["id"],
+                "not_implemented_yet",
+                "Searching stations by location is not implemented yet"
+            )
+
+    aiohttp_session = async_get_clientsession(hass)
+    stations = await async_search_station.async_SearchStation(msg["station"], msg["count"], aiohttp_session)
+
+    connection.send_result(
+        msg["id"],
+        {
+            "stations": stations,
+        },
+    )
