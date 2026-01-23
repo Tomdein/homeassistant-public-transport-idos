@@ -31,6 +31,9 @@
           "departure_time": {
             "name": "Nástupní čas"
           },
+          "departure_delay": {
+            "name": "Nástupní zpoždění"
+          },
           "arrival_station": {
             "name": "Výstupní zastávka"
           },
@@ -42,6 +45,9 @@
           },
           "arrival_time": {
             "name": "Výstupní čas"
+          },
+          "arrival_delay": {
+            "name": "Výstupní zpoždění"
           },
           "connections": {
             "name": "Spojení"
