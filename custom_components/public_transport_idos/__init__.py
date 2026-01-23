@@ -13,7 +13,7 @@ from homeassistant.const import (
 # Disable all from 'DOMAIN' from recorder history
 from homeassistant.components.recorder.__init__ import CONFIG_SCHEMA as Recorder_CONFIG_SCHEMA
 from homeassistant.components.recorder.core import Recorder
-from homeassistant.components.recorder.const import DATA_INSTANCE as Recorder_DATA_INSTANCE
+from homeassistant.helpers.recorder import DATA_INSTANCE as Recorder_DATA_INSTANCE
 from homeassistant.components.recorder.const import DOMAIN as Recorder_DOMAIN
 from homeassistant.helpers.entityfilter import convert_include_exclude_filter
 from homeassistant.const import CONF_EXCLUDE, CONF_DOMAINS
