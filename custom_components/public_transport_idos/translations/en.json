@@ -31,6 +31,9 @@
           "departure_time": {
             "name": "Departure time"
           },
+          "departure_delay": {
+            "name": "Departure delay"
+          },
           "arrival_station": {
             "name": "Arrival station"
           },
@@ -42,6 +45,9 @@
           },
           "arrival_time": {
             "name": "Arrival time"
+          },
+          "arrival_delay": {
+            "name": "Arrival delay"
           },
           "connections": {
             "name": "Connections"

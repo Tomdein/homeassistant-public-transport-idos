@@ -26,10 +26,12 @@ from .const import (
     ATTR_DEPARTURE_NUMBER,
     ATTR_DEPARTURE_TYPE,
     ATTR_DEPARTURE_TIME,
+    ATTR_DEPARTURE_DELAY,
     ATTR_ARRIVAL_STATION,
     ATTR_ARRIVAL_NUMBER,
     ATTR_ARRIVAL_TYPE,
     ATTR_ARRIVAL_TIME,
+    ATTR_ARRIVAL_DELAY,
     ATTR_CONNECTIONS,
 )
 from .coordinator import IDOSDataCoordinator
@@ -177,6 +179,10 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
     def departure_time(self):
         return self._departure_time
 
+    @property
+    def departure_delay(self):
+        return self._departure_delay
+
     # Breakout of connections into arrival attributes
     @property
     def arrival_station(self):
@@ -198,6 +204,10 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
     def arrival_time(self):
         return self._arrival_time
 
+    @property
+    def arrival_delay(self):
+        return self._arrival_delay
+
     def get_data_from_coordinator(self) -> None:
         if self.coordinator.connections_data is None:
             self._attr_native_value = None
@@ -208,11 +218,14 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
             self._departure_number = None
             self._departure_type = None
             self._departure_time = None
+            self._departure_delay = None
 
             self._arrival_station = None
             self._arrival_number = None
             self._arrival_type = None
             self._arrival_time = None
+            self._arrival_delay = None
+
             return
 
         single_connections = self.coordinator.connections_data[self._sensor_index]["single_connections"]
@@ -222,11 +235,14 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
         self._departure_number = single_connections[0]["number"]
         self._departure_type = single_connections[0]["type"]
         self._departure_time = single_connections[0]["times"][0]
+        self._departure_delay = single_connections[0].get("delay", None)
 
         self._arrival_station = single_connections[-1]["stations"][-1]
         self._arrival_number = single_connections[-1]["number"]
         self._arrival_type = single_connections[-1]["type"]
         self._arrival_time = single_connections[-1]["times"][-1]
+        self._arrival_delay = single_connections[-1].get("delay", None)
+
 
         dtime_now: dt.datetime = dt.datetime.now()
         dtime_departure: dt.datetime = dt.datetime.combine(dt.date.today(), parse_time(self._departure_time))
@@ -261,9 +277,11 @@ class PublicTransportIDOSSensor(CoordinatorEntity[IDOSDataCoordinator], SensorEn
             ATTR_DEPARTURE_NUMBER: self.departure_number,
             ATTR_DEPARTURE_TYPE: self.departure_type,
             ATTR_DEPARTURE_TIME: self.departure_time,
+            ATTR_DEPARTURE_DELAY: self.departure_delay,
             ATTR_ARRIVAL_STATION: self.arrival_station,
             ATTR_ARRIVAL_NUMBER: self.arrival_number,
             ATTR_ARRIVAL_TYPE: self.arrival_type,
             ATTR_ARRIVAL_TIME: self.arrival_time,
+            ATTR_ARRIVAL_DELAY: self.arrival_delay,
             ATTR_CONNECTIONS: self.connections,
         }
