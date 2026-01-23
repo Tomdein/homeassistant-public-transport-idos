@@ -3,6 +3,7 @@ _LOGGER = logging.getLogger(__name__)
 
 from typing import Any
 from collections.abc import Mapping
+from functools import partial
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -63,7 +64,7 @@ async def async_setup_entry(
     name = f"{config_entry.title} {IDOSTextDescriptionArrival.key} input"
     unique_id = f"{config_entry.entry_id}-{IDOSTextDescriptionArrival.key}-input"
     entities.append(PublicTransportIDOSText(unique_id, name, CONF_FLOW_ARRIVAL_STATION, config_entry , IDOSTextDescriptionArrival))
-    
+
     async_add_entities(entities)
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
@@ -110,6 +111,10 @@ class PublicTransportIDOSText(TextEntity):
 
         data = self._config_entry.data.copy()
         data[self.station_type] = value
-        self.hass.config_entries.async_update_entry(self._config_entry, data=data)
+        self.hass.add_job(
+            partial(
+                self.hass.config_entries.async_update_entry, self._config_entry, data=data
+            )
+        )
 
         return
