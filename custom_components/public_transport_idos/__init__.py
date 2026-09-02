@@ -15,6 +15,7 @@ from homeassistant.components.recorder.__init__ import CONFIG_SCHEMA as Recorder
 from homeassistant.components.recorder.core import Recorder
 from homeassistant.helpers.recorder import DATA_INSTANCE as Recorder_DATA_INSTANCE
 from homeassistant.components.recorder.const import DOMAIN as Recorder_DOMAIN
+from homeassistant.components import websocket_api
 from homeassistant.helpers.entityfilter import convert_include_exclude_filter
 from homeassistant.const import CONF_EXCLUDE, CONF_DOMAINS
 from homeassistant import config as conf_util
@@ -26,7 +27,7 @@ PLATFORMS = [Platform.SENSOR, Platform.TEXT, Platform.BUTTON]
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Add WebSocket command
-    hass.components.websocket_api.async_register_command(ws_handle_search_station)
+    websocket_api.async_register_command(hass, ws_handle_search_station)
 
     # Disable all from 'DOMAIN' from recorder history
     # Get the 'Recorder' instance
@@ -42,7 +43,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Load a config entry
-    
+
     How to handle loading of config entry - either on startup or after adding dev/entity via config flow.
     The config_entry contains data you inputted in the UI while adding the integration.
     """
@@ -62,8 +63,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry.
-    
-    Adds the ability to reload entry. 
+
+    Adds the ability to reload entry.
     Adds the button 'reload' next to 'delete' and 'disable' after clicking on integration.
     """
     if unload_ok := await hass.config_entries.async_unload_platforms(
@@ -78,7 +79,6 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
 import re
 import voluptuous as vol
 
-from homeassistant.components import websocket_api
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from idos_scraper.scrapers import async_search_station

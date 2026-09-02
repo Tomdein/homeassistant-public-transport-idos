@@ -1,7 +1,7 @@
 {
   "domain": "public_transport_idos",
   "name": "Public Transport IDOS",
-  "version": "0.2.0.b1",
+  "version": "0.2.0.b2",
   "documentation": "https://github.com/Tomdein/idos-scraper",
   "config_flow": true,
   "after_dependencies": [],
